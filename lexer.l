@@ -9,7 +9,7 @@
 
 	//void yyerror(char *s);
 	//int yylex(void);
-	int line_no = 1;
+	extern int yylineno;
 	extern symtab_t* SymbolTable;
 %}
 
@@ -28,6 +28,8 @@ line ['\n']
 string \"(.^([%d]|[%f]|[%s]|[%c]))\"
 identifier (_|{alpha})({alpha}|{digit}|_)*
 
+%x MLCOMMENT
+%x SLCOMMENT
 %%
 
 int 		{ yylval.dval = (int)atoi(yytext);
@@ -114,10 +116,21 @@ main		{ printf("<keyword, %s>\n", yytext);
 					
 				}
 
-{string} 	{
-				insert(SymbolTable, "STRING", yytext);
-				return T_STRING;
-			}
+"/*"			{BEGIN MLCOMMENT;}
+<MLCOMMENT>.		;
+<MLCOMMENT>"\n"		{++yylineno;}
+<MLCOMMENT><<EOF>>	{yyerror("EOF encountered while parsing multi line comment");
+					yyterminate();
+					}
+<MLCOMMENT>"*/"	{BEGIN INITIAL;}
+
+"//"			{BEGIN SLCOMMENT;}
+<SLCOMMENT>.	;
+<SLCOMMENT><<EOF>>	{yyerror("EOF encountered while parsing single line comment");
+					yyterminate();
+					}
+<SLCOMMENT>"\n" 	{++yylineno;
+				BEGIN INITIAL;}
 
 
 "="		{ printf("<symbol, %s>\n", yytext);
@@ -127,7 +140,7 @@ main		{ printf("<keyword, %s>\n", yytext);
 					printf("<keyword, %s>\n", yytext);
 					return T_IF;
 				}
-"\n"		{line_no++;}
+"\n"		{yylineno++;}
 
 
 
