@@ -1,4 +1,4 @@
 int main()
 {
-  int a;
+  float a = 1E0;
 }
