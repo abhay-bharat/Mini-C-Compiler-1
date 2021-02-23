@@ -78,22 +78,22 @@ main		{ printf("<keyword, %s>\n", yytext);
 
 {whitespace} ;
 
-[0][xX][0-9a-fA-F]+ 							{ insert(SymbolTable, "T_HEX_CONSTANT", yytext); 
+[0][xX][0-9a-fA-F]+ 							{ //insert(SymbolTable, "T_HEX_CONSTANT", yytext); 
 			  									yylval.dval = (int)strtol(yytext, NULL, 16);
 												printf("Constant, %lf\n", yylval.dval);
 			  									return T_HEX_CONSTANT;
 			  									}
-[+-]?{digit}+									{ insert(SymbolTable, "T_INT_CONSTANT", yytext);
+[+-]?{digit}+									{ //insert(SymbolTable, "T_INT_CONSTANT", yytext);
 			  									yylval.dval = atoi(yytext);
 												printf("Constant, %d\n", (int)yylval.dval);
 			  									return T_INT_CONSTANT;
 			  									}
-{dec}											{ insert(SymbolTable, "T_DEC_CONSTANT", yytext);
+{dec}											{ //insert(SymbolTable, "T_DEC_CONSTANT", yytext);
 			  									yylval.dval = atof(yytext);
 												printf("Constant, %lf\n", yylval.dval);
 			  									return T_DEC_CONSTANT;
 			  									}
-({digit}*)["."]?{digits}[eE][+-]?{digits}		{ insert(SymbolTable, "T_DEC_CONSTANT", yytext);
+({digit}*)["."]?{digits}[eE][+-]?{digits}		{ //insert(SymbolTable, "T_DEC_CONSTANT", yytext);
 			  									yylval.dval = atof(yytext);
 												printf("Constant, %lf\n", yylval.dval);
 			  									return T_DEC_CONSTANT;
@@ -184,7 +184,7 @@ main		{ printf("<keyword, %s>\n", yytext);
 \"[^\"\n]*$ 			{yyerror("EOF encountered in string.");
 						yyterminate();}
 \"[^\"\n]*\"			{if(yytext[yyleng-2] == '\\'){yyless(yyleng-1);yymore();}
-						else{insert(SymbolTable, "T_STRING", yytext); return T_STRING;}
+						else{//insert(SymbolTable, "T_STRING", yytext); return T_STRING;}
 						}
 
 "\n"		{yylineno++;}
