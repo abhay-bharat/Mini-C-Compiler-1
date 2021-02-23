@@ -132,19 +132,63 @@ main		{ printf("<keyword, %s>\n", yytext);
 <SLCOMMENT>"\n" 	{++yylineno;
 				BEGIN INITIAL;}
 
+"+"                                 {printf("<symbol, %s>\n", yytext);
+									return T_ADD;}
+"-"                                 {printf("<symbol, %s>\n", yytext);
+									return T_SUBTRACT;}
+"*"                                 {printf("<symbol, %s>\n", yytext);
+									return T_MULTIPLY;}
+"/"                                 {printf("<symbol, %s>\n", yytext);
+									return T_DIVIDE;}
+"%"                                 {printf("<symbol, %s>\n", yytext);
+									return T_MOD;}
+"="                                 {printf("<symbol, %s>\n", yytext);
+									return T_ASSIGN;}
+"--"                                {printf("<symbol, %s>\n", yytext);
+									return T_DECREMENT;}
+"++"                                {printf("<symbol, %s>\n", yytext);
+									return T_INCREMENT;}
 
-"="		{ printf("<symbol, %s>\n", yytext);
-		return T_ASSIGN;
-		}	
-"if"/"(".*")" 	{
-					printf("<keyword, %s>\n", yytext);
-					return T_IF;
-				}
+"+="                                {printf("<symbol, %s>\n", yytext);
+									return T_ADD_ASSIGN;}
+"-="                                {printf("<symbol, %s>\n", yytext);
+									return T_SUB_ASSIGN;}
+"*="                                {printf("<symbol, %s>\n", yytext);
+									return T_MUL_ASSIGN;}
+"/="                                {printf("<symbol, %s>\n", yytext);
+									return T_DIV_ASSIGN;}
+"%="                                {printf("<symbol, %s>\n", yytext);
+									return T_MOD_ASSIGN;}
+
+">"                                 {printf("<symbol, %s>\n", yytext);
+									return T_GREATER_THAN;}
+"<"                                 {printf("<symbol, %s>\n", yytext);
+									return T_LESSER_THAN;}
+">="                                {printf("<symbol, %s>\n", yytext);
+									return T_GREATER_EQ;}
+"<="                                {printf("<symbol, %s>\n", yytext);
+									return T_LESSER_EQ;}
+"=="                                {printf("<symbol, %s>\n", yytext);
+									return T_EQUAL;}
+
+"||"                                {printf("<symbol, %s>\n", yytext);
+									return T_LG_OR;}
+"&&"                                {printf("<symbol, %s>\n", yytext);
+									return T_LG_AND;}
+"!"                                 {printf("<symbol, %s>\n", yytext);
+									return T_NOT;}
+"!="                                {printf("<symbol, %s>\n", yytext);
+									return T_NOT_EQ;}
+
+	
+"if" 	{printf("<keyword, %s>\n", yytext);
+		return T_IF;}
+
 "\n"		{yylineno++;}
 
 
 
 .			{ printf("<symbol, %c>\n", yytext[0]);
-			return yytext[0];};
+			return yytext[0];}
 %%
 
