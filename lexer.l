@@ -1,4 +1,3 @@
-
 %{
 	#include<stdio.h>
 	#include<stdlib.h>
@@ -11,6 +10,8 @@
 	//int yylex(void);
 	extern int yylineno;
 	extern symtab_t* SymbolTable;
+	//scope for indicating the scope of the variable
+	extern int scope = 0; 
 %}
 
 alpha [A-Za-z]
@@ -28,6 +29,8 @@ line ['\n']
 string \"(.^([%d]|[%f]|[%s]|[%c]))\"
 identifier (_|{alpha})({alpha}|{digit}|_)*
 
+/* States */
+%x PREPROCESSOR
 %x MLCOMMENT
 %x SLCOMMENT
 %%
@@ -44,15 +47,17 @@ long 		{ yylval.dval = (long int)atoi(yytext);
 			  printf("<keyword, %s>\n", yytext);
 			  return T_LONG;
 			}
-float 		{ yylval.dval = atof(yytext);
+float 		{ yylval.dval = (float)atof(yytext);
 			  printf("<keyword, %s>\n", yytext);
 			  return T_FLOAT;
 			}
-char 		{ printf("<keyword, %s>\n", yytext);
-			return T_CHAR;
+char 		{ 	yylval.dval = yytext;
+				printf("<keyword, %s>\n", yytext);
+				return T_CHAR;
 			}
-double 		{ printf("<keyword, %s>\n", yytext);
-			return T_DOUBLE;
+double 		{ yylval.dval = (double)atof(yytext);
+			  printf("<keyword, %s>\n", yytext);
+			  return T_DOUBLE;
 			}
 void 		{ printf("<keyword, %s>\n", yytext);
 			  return T_VOID;
@@ -78,32 +83,47 @@ main		{ printf("<keyword, %s>\n", yytext);
 
 {whitespace} ;
 
-[0][xX][0-9a-fA-F]+ 							{ //insert(SymbolTable, "T_HEX_CONSTANT", yytext); 
+^"#include"  					{BEGIN PREPROCESSOR;}
+<PREPROCESSOR>{whitespace} 		;
+<PREPROCESSOR>"<"[^<>\n]*">"	{BEGIN INITIAL;}
+<PREPROCESSOR>\"[^<>\n]*\"		{BEGIN INITIAL;}
+<PREPROCESSOR>"\n"				{ yylineno++; 
+								  BEGIN INITIAL;
+								  ErrFlag=1;	
+								}
+<PREPROCESSOR>.					{ yyerror("Improper defined Header");}
+
+
+[0][xX][0-9a-fA-F]+ 							{ insert(SymbolTable, "T_HEX_CONSTANT", yytext); 
 			  									yylval.dval = (int)strtol(yytext, NULL, 16);
 												printf("Constant, %lf\n", yylval.dval);
 			  									return T_HEX_CONSTANT;
 			  									}
-[+-]?{digit}+									{ //insert(SymbolTable, "T_INT_CONSTANT", yytext);
+[+-]?{digit}+									{ insert(SymbolTable, "T_INT_CONSTANT", yytext);
 			  									yylval.dval = atoi(yytext);
 												printf("Constant, %d\n", (int)yylval.dval);
 			  									return T_INT_CONSTANT;
 			  									}
-{dec}											{ //insert(SymbolTable, "T_DEC_CONSTANT", yytext);
+{dec}											{ insert(SymbolTable, "T_DEC_CONSTANT", yytext);
 			  									yylval.dval = atof(yytext);
 												printf("Constant, %lf\n", yylval.dval);
 			  									return T_DEC_CONSTANT;
 			  									}
-({digit}*)["."]?{digits}[eE][+-]?{digits}		{ //insert(SymbolTable, "T_DEC_CONSTANT", yytext);
+({digit}*)["."]?{digits}[eE][+-]?{digits}		{ insert(SymbolTable, "T_DEC_CONSTANT", yytext);
 			  									yylval.dval = atof(yytext);
 												printf("Constant, %lf\n", yylval.dval);
 			  									return T_DEC_CONSTANT;
 			  									}
-\"
+
+{string} 			{
+						insert(SymbolTable, "STRING", yytext, scope);
+						return T_STRING;
+					}
 
 {identifier}	{
 					if(strlen(yytext) <= 32)
 					{
-						insert(SymbolTable, "T_IDENTIFIER", yytext);
+						insert(SymbolTable, "T_IDENTIFIER", yytext, scope);
 						yylval.tbEntry = exists(SymbolTable, yytext);
 						return T_IDENTIFIER;
 					}
@@ -180,18 +200,20 @@ main		{ printf("<keyword, %s>\n", yytext);
 "!="                                {printf("<symbol, %s>\n", yytext);
 									return T_NOT_EQ;}
 
-	
-\"[^\"\n]*$ 			{yyerror("EOF encountered in string.");
-						yyterminate();}
-\"[^\"\n]*\"			{if(yytext[yyleng-2] == '\\'){yyless(yyleng-1);yymore();}
-						else{//insert(SymbolTable, "T_STRING", yytext); return T_STRING;}
-						}
+"{"			{
+				scope++;
+			}
+
+"}"			{
+				scope--;
+				if(scope <= 0)
+					yyerror("Undefined scope");
+			}
 
 "\n"		{yylineno++;}
 
 
 
 .			{ printf("<symbol, %c>\n", yytext[0]);
-			return yytext[0];}
+			return yytext[0];};
 %%
-
