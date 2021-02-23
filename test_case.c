@@ -4,5 +4,5 @@ int main()
   /*jsgadghjhskjadk
   hjhkjhdkjhk/**/
   int b = 20;
-  printf("kjl");
+  printf("gjdsg",78,"sad");
 }

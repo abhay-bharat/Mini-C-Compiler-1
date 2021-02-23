@@ -98,7 +98,7 @@ main		{ printf("<keyword, %s>\n", yytext);
 												printf("Constant, %lf\n", yylval.dval);
 			  									return T_DEC_CONSTANT;
 			  									}
-
+\"
 
 {identifier}	{
 					if(strlen(yytext) <= 32)
@@ -181,8 +181,11 @@ main		{ printf("<keyword, %s>\n", yytext);
 									return T_NOT_EQ;}
 
 	
-"if" 	{printf("<keyword, %s>\n", yytext);
-		return T_IF;}
+\"[^\"\n]*$ 			{yyerror("EOF encountered in string.");
+						yyterminate();}
+\"[^\"\n]*\"			{if(yytext[yyleng-2] == '\\'){yyless(yyleng-1);yymore();}
+						else{insert(SymbolTable, "T_STRING", yytext); return T_STRING;}
+						}
 
 "\n"		{yylineno++;}
 

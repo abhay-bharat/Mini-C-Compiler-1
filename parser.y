@@ -113,7 +113,16 @@ pointer : T_MULTIPLY pointer
         | T_MULTIPLY
         ;
 
-funDeclaration : type T_MAIN '(' params ')' blockStmt ;
+funDeclaration : type T_IDENTIFIER '(' params ')' blockStmt | type T_MAIN '(' params ')' blockStmt | onlyDec ;
+onlyDec : type T_IDENTIFIER '(' params ')' ';' ;
+funCall : T_IDENTIFIER '(' args ')' ';' ;
+args    : argList
+        | 
+        ;
+argList : argList ',' expression
+        | expression
+        ;
+
 params : paramList 
        |
        ;
@@ -132,6 +141,7 @@ statement : expressionStmt
           | iterationStmt
           | returnStmt
           | breakStmt
+          | funCall
           ;
 
 expressionStmt : expression ';' | ';' ;
